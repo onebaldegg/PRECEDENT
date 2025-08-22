@@ -109,7 +109,7 @@ function Dashboard() {
   const renderHeader = () => (
     <header className="dashboard-header">
       <div className="logo-background"></div>
-      <div className="header-content content-overlay">
+      <div className="header-content">
         <div className="header-left">
           <Scale size={32} className="header-logo" />
           <div>
