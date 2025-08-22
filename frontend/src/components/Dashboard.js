@@ -34,6 +34,12 @@ function Dashboard() {
     }
   };
 
+  // Helper function to count words
+  const countWords = (text) => {
+    if (!text || text.trim() === '') return 0;
+    return text.trim().split(/\s+/).length;
+  };
+
   const validateForm = () => {
     const newErrors = {};
     
@@ -45,8 +51,8 @@ function Dashboard() {
       newErrors.jurisdiction = 'Jurisdiction is required';
     }
     
-    if (formData.additional_info && formData.additional_info.length > 1000) {
-      newErrors.additional_info = 'Additional information must be 1000 characters or less';
+    if (formData.additional_info && countWords(formData.additional_info) > 1000) {
+      newErrors.additional_info = 'Additional information must be 1000 words or less';
     }
     
     setErrors(newErrors);
