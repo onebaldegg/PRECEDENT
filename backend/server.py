@@ -448,6 +448,12 @@ class PrecedentExplorerAgent:
 # Initialize orchestrator
 orchestrator = ParalegalOrchestrator()
 
+def count_words(text):
+    """Count words in text"""
+    if not text or text.strip() == '':
+        return 0
+    return len(text.strip().split())
+
 @app.post('/api/legal/analyze')
 def analyze_legal_case(request: LegalAnalysisRequest, current_user: str = Depends(get_current_user)):
     """Main endpoint for legal analysis"""
@@ -456,6 +462,13 @@ def analyze_legal_case(request: LegalAnalysisRequest, current_user: str = Depend
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Crime code and jurisdiction are required"
+            )
+        
+        # Validate word count for additional_info
+        if request.additional_info and count_words(request.additional_info) > 1000:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Additional information must be 1000 words or less"
             )
         
         # Process with orchestrator
