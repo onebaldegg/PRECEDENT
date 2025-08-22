@@ -1,0 +1,319 @@
+.login-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  padding: 2rem 1rem;
+}
+
+.login-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-width: 1200px;
+  width: 100%;
+  gap: 3rem;
+}
+
+.login-card {
+  width: 100%;
+  max-width: 500px;
+  margin: 0 auto;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 20px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.login-header {
+  background: linear-gradient(135deg, #2c5f2d 0%, #1a4b1c 100%);
+  color: white;
+  padding: 2.5rem 2rem;
+  text-align: center;
+}
+
+.logo-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.logo-icon {
+  color: #f8f9fa;
+  margin-bottom: 0.5rem;
+}
+
+.app-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin: 0;
+  letter-spacing: 2px;
+}
+
+.app-subtitle {
+  font-size: 1rem;
+  opacity: 0.9;
+  margin: 0;
+  font-weight: 300;
+}
+
+.login-body {
+  padding: 2.5rem 2rem;
+}
+
+.login-title {
+  font-size: 1.8rem;
+  font-weight: 600;
+  color: #2c5f2d;
+  margin-bottom: 0.5rem;
+  text-align: center;
+}
+
+.login-description {
+  color: #6c757d;
+  text-align: center;
+  margin-bottom: 2rem;
+  font-size: 1rem;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.form-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
+  color: #2c5f2d;
+  margin-bottom: 0.5rem;
+}
+
+.password-input-container {
+  position: relative;
+}
+
+.password-toggle {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: #6c757d;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.password-toggle:hover {
+  background: #f8f9fa;
+  color: #2c5f2d;
+}
+
+.password-toggle:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.form-control.error {
+  border-color: #dc3545;
+  box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.1);
+}
+
+.error-message {
+  color: #dc3545;
+  font-size: 0.875rem;
+  margin-top: 0.5rem;
+  display: block;
+}
+
+.login-btn {
+  padding: 12px 24px;
+  font-size: 1rem;
+  font-weight: 600;
+  margin-top: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.login-footer {
+  margin-top: 2rem;
+  padding-top: 2rem;
+  border-top: 1px solid #e9ecef;
+}
+
+.demo-credentials {
+  background: #f8f9fa;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.demo-credentials h4 {
+  color: #2c5f2d;
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.demo-credentials p {
+  margin: 0.25rem 0;
+  font-size: 0.9rem;
+  color: #495057;
+}
+
+.platform-info {
+  text-align: center;
+}
+
+.platform-info h4 {
+  color: #2c5f2d;
+  margin-bottom: 1rem;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.platform-info ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.platform-info li {
+  padding: 0.25rem 0;
+  font-size: 0.9rem;
+  color: #495057;
+}
+
+.platform-benefits {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+  width: 100%;
+  max-width: 800px;
+}
+
+.benefit-card {
+  background: rgba(255, 255, 255, 0.9);
+  padding: 2rem 1.5rem;
+  border-radius: 16px;
+  text-align: center;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.benefit-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+}
+
+.benefit-card svg {
+  color: #2c5f2d;
+  margin-bottom: 1rem;
+}
+
+.benefit-card h3 {
+  color: #2c5f2d;
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.benefit-card p {
+  color: #6c757d;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .login-page {
+    padding: 1rem;
+  }
+  
+  .login-container {
+    gap: 2rem;
+  }
+  
+  .login-card {
+    max-width: 100%;
+  }
+  
+  .login-header {
+    padding: 2rem 1.5rem;
+  }
+  
+  .app-title {
+    font-size: 2rem;
+  }
+  
+  .login-body {
+    padding: 2rem 1.5rem;
+  }
+  
+  .platform-benefits {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  .benefit-card {
+    padding: 1.5rem 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .login-header {
+    padding: 1.5rem 1rem;
+  }
+  
+  .app-title {
+    font-size: 1.8rem;
+  }
+  
+  .login-body {
+    padding: 1.5rem 1rem;
+  }
+  
+  .login-title {
+    font-size: 1.5rem;
+  }
+}
+
+/* Animation for form elements */
+.form-control:focus {
+  animation: inputFocus 0.3s ease;
+}
+
+@keyframes inputFocus {
+  from {
+    transform: scale(1);
+  }
+  to {
+    transform: scale(1.02);
+  }
+}
+
+/* Loading state for login button */
+.login-btn:disabled {
+  opacity: 0.8;
+  cursor: not-allowed;
+}
+
+.login-btn .loading-spinner {
+  width: 16px;
+  height: 16px;
+}
