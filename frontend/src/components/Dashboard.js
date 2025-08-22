@@ -189,7 +189,7 @@ function Dashboard() {
           <label htmlFor="additional_info" className="form-label">
             <Search size={18} />
             Additional Information
-            <span className="optional-label">(Optional - Up to 1000 characters)</span>
+            <span className="optional-label">(Optional - Up to 1000 words)</span>
           </label>
           <textarea
             id="additional_info"
@@ -199,11 +199,10 @@ function Dashboard() {
             className={`form-control ${errors.additional_info ? 'error' : ''}`}
             placeholder="Provide any specific details about your case, circumstances, or questions you have. This information will help our AI provide more accurate and relevant analysis."
             rows="6"
-            maxLength="1000"
             disabled={loading}
           />
           <div className="character-count">
-            {formData.additional_info.length}/1000 characters
+            {countWords(formData.additional_info)}/1000 words
           </div>
           {errors.additional_info && (
             <span className="error-message">{errors.additional_info}</span>
