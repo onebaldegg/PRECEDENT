@@ -466,7 +466,7 @@ def analyze_legal_case(request: LegalAnalysisRequest, current_user: str = Depend
         )
         
         # Save analysis to database if available
-        if db:
+        if db is not None:
             try:
                 analysis_record = {
                     'username': current_user,
