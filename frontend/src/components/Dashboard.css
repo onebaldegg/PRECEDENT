@@ -6,10 +6,17 @@
 /* Header Styles */
 .dashboard-header {
   position: relative;
-  background: linear-gradient(135deg, #2c5f2d 0%, #1a4b1c 100%);
+  background: linear-gradient(135deg, #2c5f2d 0%, #1a4b1c 100%) !important;
   color: white;
   padding: 1rem 0;
   box-shadow: 0 4px 20px rgba(44, 95, 45, 0.3);
+  z-index: 10;
+}
+
+/* Ensure header content doesn't get white overlay */
+.dashboard-header .header-content {
+  background: none !important;
+  backdrop-filter: none !important;
 }
 
 .header-content {
