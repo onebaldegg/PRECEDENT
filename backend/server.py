@@ -4,21 +4,55 @@ import os
 import jwt
 import hashlib
 from datetime import datetime, timedelta
-from flask import Flask, request, jsonify
-from flask_cors import CORS
+from fastapi import FastAPI, HTTPException, Depends, status, Header
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
 from pymongo import MongoClient
 import logging
+from typing import Optional
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Initialize Flask app
-app = Flask(__name__)
-app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'precedent-secret-key-2025')
+# Initialize FastAPI app
+app = FastAPI(title="PRECEDENT Legal Research API", version="1.0.0")
 
 # Enable CORS for frontend communication
-CORS(app, origins=['*'])
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Secret key for JWT
+SECRET_KEY = os.environ.get('SECRET_KEY', 'precedent-secret-key-2025')
+
+# Pydantic models
+class LoginRequest(BaseModel):
+    username: str
+    password: str
+
+class TokenRequest(BaseModel):
+    token: str
+
+class LegalAnalysisRequest(BaseModel):
+    crime_code: str
+    jurisdiction: str
+    additional_info: str = ""
+
+class LoginResponse(BaseModel):
+    success: bool
+    token: Optional[str] = None
+    username: Optional[str] = None
+    message: Optional[str] = None
+
+class VerifyResponse(BaseModel):
+    success: bool
+    username: Optional[str] = None
+    message: Optional[str] = None
 
 # MongoDB connection
 try:
@@ -44,81 +78,96 @@ def create_token(username):
         'username': username,
         'exp': datetime.utcnow() + timedelta(hours=24)
     }
-    return jwt.encode(payload, app.config['SECRET_KEY'], algorithm='HS256')
+    return jwt.encode(payload, SECRET_KEY, algorithm='HS256')
 
 def verify_token(token):
     """Verify JWT token"""
     try:
-        payload = jwt.decode(token, app.config['SECRET_KEY'], algorithms=['HS256'])
+        payload = jwt.decode(token, SECRET_KEY, algorithms=['HS256'])
         return payload['username']
     except jwt.ExpiredSignatureError:
         return None
     except jwt.InvalidTokenError:
         return None
 
+def get_current_user(authorization: Optional[str] = Header(None)):
+    """Dependency to get current user from token"""
+    if not authorization or not authorization.startswith('Bearer '):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Authorization required"
+        )
+    
+    token = authorization.split(' ')[1]
+    username = verify_token(token)
+    if not username:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid or expired token"
+        )
+    
+    return username
+
 # Routes
-@app.route('/api/health', methods=['GET'])
+@app.get('/api/health')
 def health_check():
     """Health check endpoint"""
-    return jsonify({
+    return {
         'status': 'healthy',
         'timestamp': datetime.utcnow().isoformat(),
         'database': 'connected' if db else 'disconnected'
-    })
+    }
 
-@app.route('/api/auth/login', methods=['POST'])
-def login():
+@app.post('/api/auth/login', response_model=LoginResponse)
+def login(request: LoginRequest):
     """User login endpoint"""
     try:
-        data = request.get_json()
-        username = data.get('username')
-        password = data.get('password')
-        
-        if username == TEST_USER and password == TEST_PASSWORD:
-            token = create_token(username)
-            return jsonify({
-                'success': True,
-                'token': token,
-                'username': username
-            })
+        if request.username == TEST_USER and request.password == TEST_PASSWORD:
+            token = create_token(request.username)
+            return LoginResponse(
+                success=True,
+                token=token,
+                username=request.username
+            )
         else:
-            return jsonify({
-                'success': False,
-                'message': 'Invalid credentials'
-            }), 401
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid credentials"
+            )
             
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Login error: {e}")
-        return jsonify({
-            'success': False,
-            'message': 'Internal server error'
-        }), 500
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Internal server error"
+        )
 
-@app.route('/api/auth/verify', methods=['POST'])
-def verify():
+@app.post('/api/auth/verify', response_model=VerifyResponse)
+def verify(request: TokenRequest):
     """Verify token endpoint"""
     try:
-        data = request.get_json()
-        token = data.get('token')
-        
-        username = verify_token(token)
+        username = verify_token(request.token)
         if username:
-            return jsonify({
-                'success': True,
-                'username': username
-            })
+            return VerifyResponse(
+                success=True,
+                username=username
+            )
         else:
-            return jsonify({
-                'success': False,
-                'message': 'Invalid or expired token'
-            }), 401
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid or expired token"
+            )
             
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Verify error: {e}")
-        return jsonify({
-            'success': False,
-            'message': 'Internal server error'
-        }), 500
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Internal server error"
+        )
 
 # Multi-Agent AI System Routes (Mock Implementation)
 class ParalegalOrchestrator:
@@ -399,42 +448,31 @@ class PrecedentExplorerAgent:
 # Initialize orchestrator
 orchestrator = ParalegalOrchestrator()
 
-@app.route('/api/legal/analyze', methods=['POST'])
-def analyze_legal_case():
+@app.post('/api/legal/analyze')
+def analyze_legal_case(request: LegalAnalysisRequest, current_user: str = Depends(get_current_user)):
     """Main endpoint for legal analysis"""
     try:
-        # Verify authentication
-        auth_header = request.headers.get('Authorization')
-        if not auth_header or not auth_header.startswith('Bearer '):
-            return jsonify({'error': 'Authorization required'}), 401
-            
-        token = auth_header.split(' ')[1]
-        username = verify_token(token)
-        if not username:
-            return jsonify({'error': 'Invalid or expired token'}), 401
-        
-        # Get request data
-        data = request.get_json()
-        crime_code = data.get('crime_code', '').strip()
-        jurisdiction = data.get('jurisdiction', '').strip()
-        additional_info = data.get('additional_info', '').strip()
-        
-        if not crime_code or not jurisdiction:
-            return jsonify({
-                'error': 'Crime code and jurisdiction are required'
-            }), 400
+        if not request.crime_code or not request.jurisdiction:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Crime code and jurisdiction are required"
+            )
         
         # Process with orchestrator
-        result = orchestrator.process_legal_query(crime_code, jurisdiction, additional_info)
+        result = orchestrator.process_legal_query(
+            request.crime_code, 
+            request.jurisdiction, 
+            request.additional_info
+        )
         
         # Save analysis to database if available
         if db:
             try:
                 analysis_record = {
-                    'username': username,
-                    'crime_code': crime_code,
-                    'jurisdiction': jurisdiction,
-                    'additional_info': additional_info,
+                    'username': current_user,
+                    'crime_code': request.crime_code,
+                    'jurisdiction': request.jurisdiction,
+                    'additional_info': request.additional_info,
                     'result': result,
                     'timestamp': datetime.utcnow()
                 }
@@ -442,41 +480,28 @@ def analyze_legal_case():
             except Exception as e:
                 logger.warning(f"Failed to save analysis to database: {e}")
         
-        return jsonify(result)
+        return result
         
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Analysis error: {e}")
-        return jsonify({
-            'error': 'Failed to process legal analysis',
-            'details': str(e)
-        }), 500
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to process legal analysis"
+        )
 
-@app.route('/api/legal/confirm', methods=['POST'])
-def confirm_analysis():
+@app.post('/api/legal/confirm')
+def confirm_analysis(request: LegalAnalysisRequest, current_user: str = Depends(get_current_user)):
     """Confirm analysis details with user"""
     try:
-        # Verify authentication
-        auth_header = request.headers.get('Authorization')
-        if not auth_header or not auth_header.startswith('Bearer '):
-            return jsonify({'error': 'Authorization required'}), 401
-            
-        token = auth_header.split(' ')[1]
-        username = verify_token(token)
-        if not username:
-            return jsonify({'error': 'Invalid or expired token'}), 401
-        
-        data = request.get_json()
-        crime_code = data.get('crime_code')
-        jurisdiction = data.get('jurisdiction')
-        additional_info = data.get('additional_info')
-        
         # Generate confirmation summary
         confirmation = {
-            'summary': f"I understand you're asking about {crime_code} in {jurisdiction}.",
+            'summary': f"I understand you're asking about {request.crime_code} in {request.jurisdiction}.",
             'key_details': [
-                f"Crime/Penal Code: {crime_code}",
-                f"Jurisdiction: {jurisdiction}",
-                f"Additional information provided: {'Yes' if additional_info else 'No'}"
+                f"Crime/Penal Code: {request.crime_code}",
+                f"Jurisdiction: {request.jurisdiction}",
+                f"Additional information provided: {'Yes' if request.additional_info else 'No'}"
             ],
             'questions': [
                 "Is this the correct crime code you're asking about?",
@@ -486,15 +511,16 @@ def confirm_analysis():
             'next_steps': "If this information is correct, I'll analyze your case using our Legal Decompiler, Analytics Engine, and Precedent Explorer."
         }
         
-        return jsonify(confirmation)
+        return confirmation
         
     except Exception as e:
         logger.error(f"Confirmation error: {e}")
-        return jsonify({
-            'error': 'Failed to generate confirmation',
-            'details': str(e)
-        }), 500
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to generate confirmation"
+        )
 
 if __name__ == '__main__':
+    import uvicorn
     port = int(os.environ.get('PORT', 8001))
-    app.run(host='0.0.0.0', port=port, debug=True)
+    uvicorn.run(app, host='0.0.0.0', port=port)
