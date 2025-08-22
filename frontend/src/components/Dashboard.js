@@ -201,7 +201,7 @@ function Dashboard() {
             rows="6"
             disabled={loading}
           />
-          <div className="character-count">
+          <div className="word-count">
             {countWords(formData.additional_info)}/1000 words
           </div>
           {errors.additional_info && (
